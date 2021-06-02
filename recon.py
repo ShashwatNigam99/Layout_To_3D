@@ -26,7 +26,7 @@ def getBoundingBoxes(img):
     # contours = contours[0] if len(contours) == 2 else contours[1]
     for cntr in contours[1]:
         x,y,w,h = cv2.boundingRect(cntr) # og code 
-        # x,y,w,h = cv2.minAreaRect(cntr)
+        # x,y,w,h = cv2.minAreapltRect(cntr)
         # https://docs.opencv.org/3.1.0/dd/d49/tutorial_py_contour_features.html 
         boundingBoxes.append([x,y,w,h])
     return boundingBoxes
@@ -132,13 +132,13 @@ def projectToImage(image, vertices, K):
 
         pts.append(imagePts)
 
-        plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
+    #     plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
 
-    plt.show()
+    # plt.show()
     return pts   
 
 
-if __name__ == "__main__":
+def wrapper_func():
     rackBB = []
     boxBB = []
     freeSpace = []
@@ -146,7 +146,9 @@ if __name__ == "__main__":
 
     for i in range(SHELVES):
         # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample/', '000001_'+str(i)+".png")
-        topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./samples/1/', '000000_'+str(i)+".png")
+        # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./samples/1/', '000000_'+str(i)+".png")
+        
+        topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample_1/blendSample/', '000002_'+str(i)+".png")
 
         boxBoundingBoxes = calculate3DBB(topBoxesBBox, frontBoxesBBox)
         rackBoundingBoxes = calculate3DBB(topRackBBox, frontRackBBox)
@@ -154,10 +156,22 @@ if __name__ == "__main__":
         boxBB.append(boxBoundingBoxes)
         rackBB.append(rackBoundingBoxes)
 
-    vertices = plotter3DOpen(boxBB, rackBB, 1, True )
+    vertices = plotter3DOpen(boxBB, rackBB, 1, False )
 
-    RGBimg = plt.imread('samples/1/000000.png')
+    # RGBimg = plt.imread('samples/1/000000.png')
+    RGBimg = plt.imread('./blendSample_1/blendSample/1.png')
+    # print(RGBimg.shape)
     imagePoints = projectToImage(RGBimg, vertices, K)
+    # print(imagePoints)
+    imagePoints_list = []
+    for ii in imagePoints:
+        for jj in ii:
+            # print(jj)
+            imagePoints_list.append([int(jj[0]), int(jj[1])])
+            # print([int(jj[0]), int(jj[1])])
+
+    return imagePoints_list
 
 
+imagePoints = wrapper_func()
 
