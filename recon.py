@@ -171,7 +171,7 @@ def wrapper_func():
 
     for ii in vertices:
         for jj in ii:
-            vertices_list.append([int(jj[0]), int(jj[1]), int(jj[1])])
+            vertices_list.append([int(jj[0]), int(jj[1]), int(jj[2])])
     
     return imagePoints_list,vertices_list
 
