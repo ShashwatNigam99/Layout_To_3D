@@ -157,20 +157,23 @@ def wrapper_func():
         rackBB.append(rackBoundingBoxes)
 
     vertices = plotter3DOpen(boxBB, rackBB, 1, False )
-
+    # print("printing the vertices")
+    # print(vertices)
     # RGBimg = plt.imread('samples/1/000000.png')
     RGBimg = plt.imread('./blendSample_1/blendSample/1.png')
-    # print(RGBimg.shape)
     imagePoints = projectToImage(RGBimg, vertices, K)
-    # print(imagePoints)
     imagePoints_list = []
+    vertices_list = []
+
     for ii in imagePoints:
         for jj in ii:
-            # print(jj)
             imagePoints_list.append([int(jj[0]), int(jj[1])])
-            # print([int(jj[0]), int(jj[1])])
 
-    return imagePoints_list
+    for ii in vertices:
+        for jj in ii:
+            vertices_list.append([int(jj[0]), int(jj[1]), int(jj[1])])
+    
+    return imagePoints_list,vertices_list
 
 
 imagePoints = wrapper_func()

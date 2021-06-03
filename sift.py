@@ -3,6 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from recon import wrapper_func
 
+K =  np.array([[293.33334351 ,           0.  ,        240.    ],
+               [  0.         , 293.33334351  ,        135.    ],
+               [  0.         ,  0.           ,        1.      ]])
+
+
 def display_on_image(img,points_list):
 
     points_list = np.array(points_list)
@@ -29,21 +34,43 @@ def harris_corner_detector(img):
     return indices_list
 
 # Get specified number of matches between both images using BF matcher(Brute force matcher)
-def feature_matching(img1, img2, kp1, des1, kp2, des2, numMatches = 50):
+def feature_matching(img1, img2, kp1, des1, kp2, des2, list1, list2, vertices_original, numMatches = 50, viz = False):
     
     #feature matching
     bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
 
     matches = bf.match(des1, des2)
+
     matches = sorted(matches, key = lambda x:x.distance)[:numMatches]
 
-    img = cv2.drawMatches(img1, kp1, img2, kp2, matches, img2, flags=2)
-    fig = plt.figure(figsize=(16,16))
-    plt.axis('off')
-    plt.imshow(img)
-    plt.show()
+    img2_points = []
+    obj_points = []
+    dist_coeff = np.zeros((1,5))
 
-def compute_sift(img1,list1,img2,list2,thresh = 0.75):
+    for m in matches:
+        img2_points.append(list2[m.trainIdx])
+        obj_points.append(vertices_original[m.queryIdx])
+
+    img2_points = np.array(img2_points,dtype=np.float32)
+    obj_points = np.array(obj_points,dtype=np.float32)
+
+    print(img2_points.shape)
+    print(obj_points.shape)
+
+    (_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac(
+            obj_points, img2_points, K, dist_coeff)
+
+    print(rotation_vector)
+    print(translation_vector)
+    
+    if viz:
+        img = cv2.drawMatches(img1, kp1, img2, kp2, matches, img2, flags=2)
+        fig = plt.figure(figsize=(16,16))
+        plt.axis('off')
+        plt.imshow(img)
+        plt.show()
+
+def compute_sift(img1,list1,img2,list2,vertices_original,thresh = 0.75):
 
     sift = cv2.xfeatures2d.SIFT_create()
     kp1 = []
@@ -57,7 +84,7 @@ def compute_sift(img1,list1,img2,list2,thresh = 0.75):
     kp1, des1 = sift.compute(img1,kp1)
     kp2, des2 = sift.compute(img2,kp2)
 
-    feature_matching(img1, img2, kp1, des1, kp2, des2)
+    feature_matching(img1, img2, kp1, des1, kp2, des2, list1, list2, vertices_original)
 
    
 RGBimg_original = cv2.imread('./blendSample_1/blendSample/1.png')
@@ -65,9 +92,9 @@ RGBimg_original = cv2.cvtColor(RGBimg_original, cv2.COLOR_BGR2RGB)
 RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/6.png')
 RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
 
-imagePoints_original = wrapper_func() # Make sure that the paths are the same in both files.
+imagePoints_original, vertices_original = wrapper_func() # Make sure that the paths are the same in both files.
 images_points_slanted = harris_corner_detector(RGBimg_slanted)
 
-compute_sift(RGBimg_original, imagePoints_original, RGBimg_slanted, images_points_slanted,0.75)
+compute_sift(RGBimg_original, imagePoints_original, RGBimg_slanted, images_points_slanted,vertices_original, 0.75)
 # display_on_image(RGBimg_original,imagePoints_original)
 # display_on_image(RGBimg_slanted,images_points_slanted)
