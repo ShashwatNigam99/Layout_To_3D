@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from recon import wrapper_func
+from scipy.spatial.transform import Rotation as R
 
 K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
@@ -34,7 +35,7 @@ def harris_corner_detector(img):
     return indices_list
 
 # Get specified number of matches between both images using BF matcher(Brute force matcher)
-def feature_matching(img1, img2, kp1, des1, kp2, des2, list1, list2, vertices_original, numMatches = 50, viz = False):
+def feature_matching(img1, img2, kp1, des1, kp2, des2, list1, list2, vertices_original, numMatches = 20, viz = False):
     
     #feature matching
     bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
@@ -44,27 +45,55 @@ def feature_matching(img1, img2, kp1, des1, kp2, des2, list1, list2, vertices_or
     matches = sorted(matches, key = lambda x:x.distance)[:numMatches]
 
     img2_points = []
+    img1_points = []
     obj_points = []
     dist_coeff = np.zeros((1,5))
 
     for m in matches:
         img2_points.append(list2[m.trainIdx])
         obj_points.append(vertices_original[m.queryIdx])
+        img1_points.append(list1[m.queryIdx])
+
 
     img2_points = np.array(img2_points,dtype=np.float32)
     obj_points = np.array(obj_points,dtype=np.float32)
 
+    # pts = []
+    # for boxPoints in obj_points:
+    #     print(boxPoints)
+    #     imagePts = K @ boxPoints.T
+    #     print(imagePts)
+    #     imagePts[0] = int(imagePts[0] / imagePts[2])
+    #     imagePts[1] = int(imagePts[1] / imagePts[2])
+    #     imagePts = imagePts[:2].T
+    #     print(imagePts)
+    #     pts.append(imagePts)
+
     print(img2_points.shape)
     print(obj_points.shape)
 
-    (_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac(
-            obj_points, img2_points, K, dist_coeff)
-
+    (_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac(obj_points, img2_points, K, dist_coeff)
+    # (_, rotation_vector, translation_vector) = cv2.solvePnP(obj_points, img2_points, K, dist_coeff)
     print(rotation_vector)
     print(translation_vector)
+
     
-    if viz:
+    if True:
         img = cv2.drawMatches(img1, kp1, img2, kp2, matches, img2, flags=2)
+        # for i in pts:
+        #     # print(i)
+        #     img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 0, 255), thickness=3)
+
+        # for i in img1_points:
+        #     # print(i)
+        #     img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 255, 255), thickness=3)
+
+        # for i in pts:
+        #     print(i)
+        #     img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 0, 255), thickness=3)
+        # plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
+        # plt.imshow(img1)
+        # plt.show()
         fig = plt.figure(figsize=(16,16))
         plt.axis('off')
         plt.imshow(img)
@@ -89,7 +118,7 @@ def compute_sift(img1,list1,img2,list2,vertices_original,thresh = 0.75):
    
 RGBimg_original = cv2.imread('./blendSample_1/blendSample/1.png')
 RGBimg_original = cv2.cvtColor(RGBimg_original, cv2.COLOR_BGR2RGB)
-RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/6.png')
+RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/4.png')
 RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
 
 imagePoints_original, vertices_original = wrapper_func() # Make sure that the paths are the same in both files.
@@ -98,3 +127,5 @@ images_points_slanted = harris_corner_detector(RGBimg_slanted)
 compute_sift(RGBimg_original, imagePoints_original, RGBimg_slanted, images_points_slanted,vertices_original, 0.75)
 # display_on_image(RGBimg_original,imagePoints_original)
 # display_on_image(RGBimg_slanted,images_points_slanted)
+
+# print(R.from_euler('XYZ', [np.pi/2, 0, np.pi/2]).as_matrix())

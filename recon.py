@@ -131,7 +131,7 @@ def projectToImage(image, vertices, K):
         imagePts = imagePts[:2,:].T
 
         pts.append(imagePts)
-
+    # print(pts)
     #     plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
 
     # plt.show()
@@ -171,7 +171,7 @@ def wrapper_func():
 
     for ii in vertices:
         for jj in ii:
-            vertices_list.append([int(jj[0]), int(jj[1]), int(jj[2])])
+            vertices_list.append([jj[0], jj[1], jj[2]])
     
     return imagePoints_list,vertices_list
 
