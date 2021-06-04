@@ -8,6 +8,34 @@ K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])
 
+T_change = np.array([0, -3.6900005575561523, 0])
+R_change = [0, 0, 0]
+# R_matrix = R.from_euler('xyz', R_change, degrees=True)
+# R_matrix = np.array(R_matrix.as_matrix())
+# RT_matrix = np.array([[0 for i in range(4)] for j in range(3)])
+# for i in range(3):
+#     for j in range(4):
+#         if(j!=3):
+#             RT_matrix[i,j] = R_matrix[i,j]
+#         else:
+#             RT_matrix[i,j] = T_change[i]
+#         print(RT_matrix[i,j], end = " ")
+#     print()
+
+def get_RT_matrix(R_change,T_change):
+    print(T_change)
+    R_matrix = R.from_euler('xyz', R_change, degrees=True)
+    R_matrix = np.array(R_matrix.as_matrix())
+    RT_matrix = np.array([[0.0 for i in range(4)] for j in range(3)])
+    for i in range(3):
+        for j in range(4):
+            if(j!=3):
+                RT_matrix[i,j] = R_matrix[i,j]
+            else:
+                RT_matrix[i,j] = T_change[i]
+    return RT_matrix
+
+print(get_RT_matrix(R_change, T_change))
 
 def display_on_image(img,points_list):
 
@@ -58,16 +86,16 @@ def feature_matching(img1, img2, kp1, des1, kp2, des2, list1, list2, vertices_or
     img2_points = np.array(img2_points,dtype=np.float32)
     obj_points = np.array(obj_points,dtype=np.float32)
 
-    # pts = []
-    # for boxPoints in obj_points:
-    #     print(boxPoints)
-    #     imagePts = K @ boxPoints.T
-    #     print(imagePts)
-    #     imagePts[0] = int(imagePts[0] / imagePts[2])
-    #     imagePts[1] = int(imagePts[1] / imagePts[2])
-    #     imagePts = imagePts[:2].T
-    #     print(imagePts)
-    #     pts.append(imagePts)
+    pts = []
+    for boxPoints in obj_points:
+        # print(boxPoints)
+        imagePts = K @ boxPoints.T
+        # print(imagePts)
+        imagePts[0] = int(imagePts[0] / imagePts[2])
+        imagePts[1] = int(imagePts[1] / imagePts[2])
+        imagePts = imagePts[:2].T
+        # print(imagePts)
+        pts.append(imagePts)
 
     print(img2_points.shape)
     print(obj_points.shape)
@@ -79,25 +107,22 @@ def feature_matching(img1, img2, kp1, des1, kp2, des2, list1, list2, vertices_or
 
     
     if True:
-        img = cv2.drawMatches(img1, kp1, img2, kp2, matches, img2, flags=2)
-        # for i in pts:
-        #     # print(i)
-        #     img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 0, 255), thickness=3)
+        # img = cv2.drawMatches(img1, kp1, img2, kp2, matches, img2, flags=2)
+        for i in pts:
+            # print(i)
+            img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 0, 255), thickness=3)
 
-        # for i in img1_points:
-        #     # print(i)
-        #     img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 255, 255), thickness=3)
+        for i in img1_points:
+            # print(i)
+            img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 255, 255), thickness=3)
 
-        # for i in pts:
-        #     print(i)
-        #     img1 = cv2.circle(img1, (int(i[0]),int(i[1])), radius=1, color=(0, 0, 255), thickness=3)
         # plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
-        # plt.imshow(img1)
-        # plt.show()
-        fig = plt.figure(figsize=(16,16))
-        plt.axis('off')
-        plt.imshow(img)
+        plt.imshow(img1)
         plt.show()
+        # fig = plt.figure(figsize=(16,16))
+        # plt.axis('off')
+        # plt.imshow(img)
+        # plt.show()
 
 def compute_sift(img1,list1,img2,list2,vertices_original,thresh = 0.75):
 
