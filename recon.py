@@ -13,7 +13,8 @@ import open3d as o3d
 
 LAYOUT_DIM = 512
 SHELVES = 4
-SCALE= 0.015625
+# SCALE= 0.015625
+SCALE= 0.038
 K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])
@@ -83,6 +84,9 @@ def calculate3DBB(topBBox, frontBBox):
 def plotter3DOpen(boxBB, rackBB, type=1, show=True):
     geometries = []
     vertices = []
+    print(len(boxBB))
+    print(len(boxBB[0]))
+    print(boxBB[0][0].shape)
     if type == 1:
         for shelfBoxes in boxBB:
             for box in shelfBoxes:
@@ -176,5 +180,6 @@ def wrapper_func():
     return imagePoints_list,vertices_list
 
 
-imagePoints = wrapper_func()
+# imagePoints = wrapper_func()
 
+getBBForLabel
