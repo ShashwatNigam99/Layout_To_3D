@@ -1,6 +1,5 @@
 # Testing
 
-# from sift import R_change, T_change
 from numpy.core.arrayprint import printoptions
 from recon import wrapper_func
 import numpy as np
@@ -20,12 +19,14 @@ P1_R_matrix = np.array([[-0.0000,  1.0000, -0.0000],
                        [-0.0000,  0.0000, -1.0000],
                        [-1.0000, -0.0000,  0.0000]])
 
-P2_T = np.array([-7.082789897918701, -2.38836, 5.098252296447754] )
-# P2_T = np.array([-7.082789897918701, -2.38836, 5.098252296447754] )
+P2_T = np.array([-7.082789897918701, -1.60836, 5.79825] )
 P2_R = np.array([90.0, 0.0, 82.0])
-P2_R_matrix = np.array([[0.1392, 0.9903, -0.0000],
-                       [0.0000, 0.0000, -1.0000],
-                       [-0.9903, 0.1392,  0.0000]])
+P2_R_matrix = np.array([[-0.0000,  1.0000, -0.0000],
+                       [-0.0000,  0.0000, -1.0000],
+                       [-1.0000, -0.0000,  0.0000]])
+# P2_R_matrix = np.array([[0.1392, 0.9903, -0.0000],
+#                        [0.0000, 0.0000, -1.0000],
+#                        [-0.9903, 0.1392,  0.0000]])
 
 corners_list = np.array(corners_list)
 
@@ -46,54 +47,35 @@ def get_RT_matrix(R_change,T_change):
                 RT_matrix[i,j] = R_matrix[i,j]
             else:
                 RT_matrix[i,j] = T_change[i]
-    # print(RT_matrix)
     return RT_matrix
 
 T_change = -(P2_T - P1_T)
-# T_change = (P2_T - P1_T)
-# T_change /= 2.5
-# T_change = np.array([[T_change[1]],
-#                         [T_change[2]],
-#                         [T_change[0]]])
-print(T_change)
-T_change = np.array([[T_change[1]], # [0], [-T_change[0]]]);
+T_change = np.array([[T_change[1]],
                      [-T_change[2]],
                         [-T_change[0]]])
 
-
-# T_change = np.array([[T_change[1]],
-#                         [T_change[2]],
-#                         [T_change[0]]])                       
-
-# R_change = np.array([0.0,
-#                      0.0, 
-#                      0.0])
-
-# R_change = (P1_R - P2_R)
-# R_change = np.array([[R_change[0]], # [0], [-T_change[0]]]);
-#                      [R_change[1]],
-#                      [R_change[2]]])
-
 R_change_matrix = P1_R_matrix.T.dot(P2_R_matrix)
 R_change_vec, _ = cv2.Rodrigues(R_change_matrix)
-R_change_vec = np.array([[R_change_vec[1]], # [0], [-T_change[0]]]);
+R_change_vec = np.array([[R_change_vec[1]],
                      [-R_change_vec[2]],
                         [-R_change_vec[0]]])
 
 corners_array = np.array(corners_list)
 
 projected_points, _ = cv2.projectPoints( corners_list, R_change_vec, T_change, K, dist_coeff)
-# (_, rotation_vector, translation_vector) = cv2.solvePnP(corners_array, projected_points, K, dist_coeff, None, None, False, cv2.SOLVEPNP)
 
 (_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac(corners_array, projected_points, K, dist_coeff)
+projected_points_PnP, _ = cv2.projectPoints( corners_list, rotation_vector, translation_vector, K, dist_coeff)
 
-print(translation_vector)
-print(rotation_vector)
+print("GT Translations : ", T_change)
+print("GT Rotations : ", R_change_vec)
+print("PnP Translations : ", translation_vector)
+print("PnP Rotations : ", rotation_vector)
 
 
 RGBimg_original = cv2.imread('./blendSample_1/blendSample/1.png')
 RGBimg_original = cv2.cvtColor(RGBimg_original, cv2.COLOR_BGR2RGB)
-RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/4.png')
+RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/3.png')
 RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
 
 img1 = RGBimg_original
@@ -102,7 +84,15 @@ img2 = RGBimg_slanted
 
 for i in projected_points:
     # print(int(i[0][0]),int(i[0][1]))
-    img2 = cv2.circle(img2, (int(i[0][0]),int(i[0][1])), radius=1, color=(0, 0, 255), thickness=3)
+    img2 = cv2.circle(img2, (int(i[0][0]),int(i[0][1])), radius=1, color=(0, 0, 255), thickness=1)
+
+
+for i in projected_points_PnP:
+    # print(int(i[0][0]),int(i[0][1]))
+    img2 = cv2.circle(img2, (int(i[0][0]),int(i[0][1])), radius=1, color=(0, 255, 255), thickness=1)
+
+# for i,j in zip(projected_points_PnP, projected_points):
+    # print(i,j)
 
 plt.imshow(img2)
 plt.show()
