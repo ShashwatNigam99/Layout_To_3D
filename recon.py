@@ -11,6 +11,8 @@ from numpy.lib import imag
 # from mpl_toolkits.mplot3d import Axes3D
 import open3d as o3d
 
+from utils import compute_sift
+
 LAYOUT_DIM = 512
 SHELVES = 4
 # SCALE= 0.015625
@@ -126,7 +128,7 @@ def plotter3DOpen(boxBB, rackBB, type=1, show=True):
 
 def projectToImage(image, vertices, K):
     pts = []
-    implot = plt.imshow(image)
+    # implot = plt.imshow(image)
 
     for boxPoints in vertices:
         imagePts = K @ boxPoints.T
@@ -173,11 +175,14 @@ def wrapper_func():
         for jj in ii:
             imagePoints_list.append([int(jj[0]), int(jj[1])])
 
+    RGBimg = cv2.imread('./blendSample_1/blendSample/1.png')
+    RGBimg = cv2.cvtColor(RGBimg, cv2.COLOR_BGR2RGB)
+    kp, des = compute_sift(RGBimg, imagePoints_list)
     for ii in vertices:
         for jj in ii:
             vertices_list.append([jj[0], jj[1], jj[2]])
     
-    return imagePoints_list,vertices_list
+    return kp, des, vertices_list
 
 
 # imagePoints = wrapper_func()
