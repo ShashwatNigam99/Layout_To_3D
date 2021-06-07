@@ -80,6 +80,10 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     print(translation_vector)
     rotation_matrix, _ = cv2.Rodrigues(rotation_vector)
     print(rotation_matrix)
+    print("AFTER REFINING")
+    rvec, tvec = cv2.solvePnPRefineLM(obj_points, img2_points, K, dist_coeff, rotation_vector, translation_vector)
+    print(rvec)
+    print(tvec)
     # print(-np.matrix(rotation_matrix).T * np.matrix(translation_vector))
     if False:
         
@@ -103,5 +107,5 @@ kp1, des1, vertices_original = wrapper_func() # Make sure that the paths are the
 kp2, des2 = harris_corner_detector(img2)
 # kp2, des2 = sift_compute(img2, True)
 
-feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original,16)
+feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original,200)
 

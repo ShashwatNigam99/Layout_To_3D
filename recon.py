@@ -7,6 +7,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from numpy.lib import imag
+import imutils
 # import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
 import open3d as o3d
@@ -27,7 +28,10 @@ def getBoundingBoxes(img):
     contours = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # cv2.CHAIN_APPROX_SIMPLE removes all redundant points and compresses the contour, thereby saving memory
     # contours = contours[0] if len(contours) == 2 else contours[1]
-    for cntr in contours[1]:
+    contours = contours[1] if imutils.is_cv3() else contours[0]
+    # print(contours[1].type)
+    # contours[1] = np.array(contours[1], dtype = np.float64)
+    for cntr in contours:
         x,y,w,h = cv2.boundingRect(cntr) # og code 
         # x,y,w,h = cv2.minAreapltRect(cntr)
         # https://docs.opencv.org/3.1.0/dd/d49/tutorial_py_contour_features.html 
