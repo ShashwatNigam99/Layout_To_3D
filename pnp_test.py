@@ -15,7 +15,7 @@ K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])
 
-image_index = 3
+image_index = 4
 Positions = [np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
              np.array([-7.082789897918701, -1.60836, 5.79825]),
              np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
@@ -69,11 +69,10 @@ projected_points, _ = cv2.projectPoints( corners_list, R_change_vec, T_change, K
 
 print(corners_array.T.shape,  projected_points.squeeze().T.shape)
 data = {'points3D': corners_array.T, 'points2D': projected_points.squeeze().T}
-io.savemat('test.mat',data)
+io.savemat('test4.mat',data)
 
 (_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac(corners_array, projected_points, K, dist_coeff)
 projected_points_PnP, _ = cv2.projectPoints( corners_list, rotation_vector, translation_vector, K, dist_coeff)
-
 
 
 print("Ground truth translation")
