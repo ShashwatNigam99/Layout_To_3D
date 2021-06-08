@@ -63,7 +63,6 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     for m in matches:
         img2_points.append([int(kp2[m.trainIdx].pt[0]),int(kp2[m.trainIdx].pt[1])])
         obj_points.append(vertices_original[m.queryIdx])
-        # print(tuple(vertices_original[m.queryIdx]))
         dict_analyser[tuple(vertices_original[m.queryIdx])] = (int(kp2[m.trainIdx].pt[0]),int(kp2[m.trainIdx].pt[1]))
 
     print(dict_analyser)
@@ -83,13 +82,15 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     print("translation vector (SIFT)")
     print(translation_vector)
     rotation_matrix, _ = cv2.Rodrigues(rotation_vector)
+    print("rotation matrix (SIFT)")
     print(rotation_matrix)
-    # print("AFTER REFINING")
-    # rvec, tvec = cv2.solvePnPRefineLM(obj_points, img2_points, K, dist_coeff, rotation_vector, translation_vector)
-    # print(rvec)
-    # print(tvec)
-    # print(-np.matrix(rotation_matrix).T * np.matrix(translation_vector))
-    if True:
+
+    rvec, tvec = cv2.solvePnPRefineLM(obj_points, img2_points, K, dist_coeff, rotation_vector, translation_vector)
+
+    print(rvec)
+    print(tvec)
+
+    if False:
         
         img = cv2.drawMatches(img1, kp1, img2, kp2, matches, img2, flags=2)
         
@@ -105,11 +106,11 @@ def read_images(i,j):
     RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
     return RGBimg_original, RGBimg_slanted
 
-img1, img2 = read_images(1,4) # reading the images
+img1, img2 = read_images(1,6) # reading the images
 
 kp1, des1, vertices_original = wrapper_func() # Make sure that the paths are the same in both files.
 kp2, des2 = harris_corner_detector(img2)
 # kp2, des2 = sift_compute(img2, True)
 
-feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, 100)
+feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, 30)
 
