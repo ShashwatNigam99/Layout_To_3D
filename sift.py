@@ -13,8 +13,8 @@ K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])
 #SIFT MATCHES
-VIZ= False
-image_index = 4
+VIZ= True
+image_index = 6
 Positions = [np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
              np.array([-7.082789897918701, -1.60836, 5.79825]),
              np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
@@ -125,7 +125,6 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     for m in matches:
         img2_points.append([int(kp2[m.trainIdx].pt[0]),int(kp2[m.trainIdx].pt[1])])
         obj_points.append(vertices_original[m.queryIdx])
-        # print(tuple(vertices_original[m.queryIdx]))
         dict_analyser[tuple(vertices_original[m.queryIdx])] = (int(kp2[m.trainIdx].pt[0]),int(kp2[m.trainIdx].pt[1]))
 
     img2_points = np.array(img2_points,dtype=np.float32)

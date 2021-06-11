@@ -10,7 +10,7 @@ from scipy.spatial.transform import Rotation as R
 from scipy import io
 
 kp1, des1, corners_list = wrapper_func() # Make sure that the paths are the same in both files.
-viz = False
+viz = True
 K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])
@@ -72,17 +72,18 @@ print(corners_list.shape)
 # print(corners_array.T.shape,  projected_points.squeeze().T.shape)
 # data = {'points3D': corners_array.T, 'points2D': projected_points.squeeze().T}
 # io.savemat('test4.mat',data)
-imgx = cv2.imread('./blendSample_1/blendSample/1.png')
-ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera([corners_array.astype(np.float32)], \
-                                            [projected_points.astype(np.float32)],\
-                                            imgx.shape[:2], \
-                                            K, None,flags=cv2.CALIB_USE_INTRINSIC_GUESS)
-print(ret)
-print(mtx)
-print(dist)
-rtmatrix, _ = cv2.Rodrigues(np.array(rvecs))
-print(rtmatrix)
-print(tvecs)
+# imgx = cv2.imread('./blendSample_1/blendSample/1.png')
+# ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera([corners_array.astype(np.float32)], \
+#                                                     [projected_points.astype(np.float32)],\
+#                                                     imgx.shape[:2], None, None)
+
+                                            # K, None,flags=cv2.CALIB_USE_INTRINSIC_GUESS)
+# print(ret)
+# print(mtx)
+# print(dist)
+# rtmatrix, _ = cv2.Rodrigues(np.array(rvecs))
+# print(rtmatrix)
+# print(tvecs)
 
 
 (_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac( corners_array, \
