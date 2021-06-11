@@ -67,12 +67,30 @@ corners_array = np.array(corners_list)
 
 projected_points, _ = cv2.projectPoints( corners_list, R_change_vec, T_change, K, dist_coeff)
 
-print(corners_array.T.shape,  projected_points.squeeze().T.shape)
-data = {'points3D': corners_array.T, 'points2D': projected_points.squeeze().T}
-io.savemat('test4.mat',data)
+print(corners_list.shape)
 
-(_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac(corners_array, projected_points, K, dist_coeff)
-projected_points_PnP, _ = cv2.projectPoints( corners_list, rotation_vector, translation_vector, K, dist_coeff)
+# print(corners_array.T.shape,  projected_points.squeeze().T.shape)
+# data = {'points3D': corners_array.T, 'points2D': projected_points.squeeze().T}
+# io.savemat('test4.mat',data)
+imgx = cv2.imread('./blendSample_1/blendSample/1.png')
+ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera([corners_array.astype(np.float32)], \
+                                            [projected_points.astype(np.float32)],\
+                                            imgx.shape[:2], \
+                                            K, None,flags=cv2.CALIB_USE_INTRINSIC_GUESS)
+print(ret)
+print(mtx)
+print(dist)
+rtmatrix, _ = cv2.Rodrigues(np.array(rvecs))
+print(rtmatrix)
+print(tvecs)
+
+
+(_, rotation_vector, translation_vector, inliers) = cv2.solvePnPRansac( corners_array, \
+                                                                        projected_points,
+                                                                        K, dist_coeff, \
+                                                              None, None, None, cv2.USAC_MAGSAC)
+
+projected_points_PnP, _ = cv2.projectPoints( corners_array, rotation_vector, translation_vector, K, dist_coeff)
 
 
 print("Ground truth translation")
