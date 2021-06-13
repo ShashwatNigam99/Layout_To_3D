@@ -10,7 +10,7 @@ from scipy.spatial.transform import Rotation as R
 from scipy import io
 
 kp1, des1, corners_list = wrapper_func() # Make sure that the paths are the same in both files.
-viz = True
+viz = False
 K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])

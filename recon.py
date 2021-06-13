@@ -166,10 +166,11 @@ def wrapper_func():
         boxBB.append(boxBoundingBoxes)
         rackBB.append(rackBoundingBoxes)
 
-    vertices = plotter3DOpen(boxBB, rackBB, 1, False )
+    # vertices = plotter3DOpen(boxBB, rackBB, 1, False )
     # print("printing the vertices")
     # print(vertices)
     # RGBimg = plt.imread('samples/1/000000.png')
+    vertices = np.load("./3Dpoints1.npy")
     RGBimg = plt.imread('./blendSample_1/blendSample/1.png')
     imagePoints = projectToImage(RGBimg, vertices, K)
     imagePoints_list = []

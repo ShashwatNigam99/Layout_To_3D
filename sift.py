@@ -13,8 +13,8 @@ K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])
 #SIFT MATCHES
-VIZ= True
-image_index = 6
+VIZ= False
+image_index = 4
 Positions = [np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
              np.array([-7.082789897918701, -1.60836, 5.79825]),
              np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
@@ -116,7 +116,7 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     matches = bf.match(des1, des2)
 
     matches = sorted(matches, key = lambda x:x.distance)[:numMatches]
-    print("Number of matches:", len(matches))
+    # print("Number of matches:", len(matches))
     img2_points = []
     obj_points = []
     dist_coeff = np.zeros((1,5))
@@ -133,9 +133,11 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     # data = {'points3D': obj_points.T.astype('float64'), 'points2D': img2_points.squeeze().T.astype('float64')}
     # io.savemat('sift4.mat',data)
     
-    print("USAC_MAGSAC")
+    # print("USAC_MAGSAC")
+    # (_, rotation_vector, translation_vector,inliers) = cv2.solvePnPRansac(obj_points, img2_points,\
+    #                                                         K, dist_coeff, cv2.USAC_FAST)
     (_, rotation_vector, translation_vector,inliers) = cv2.solvePnPRansac(obj_points, img2_points,\
-                                                            K, dist_coeff, cv2.USAC_FAST)
+                                                         K, dist_coeff, reprojectionError = 1.0, flags = cv2.SOLVEPNP_EPNP)
     rotation_matrix, _ = cv2.Rodrigues(rotation_vector)
     print("Rotation (SIFT)")
     print(rotation_matrix)
@@ -173,11 +175,14 @@ kp2, des2 = harris_corner_detector(img2)
 # kp2, des2 = sift_compute(img2, True)
 
 [rotation_vector, translation_vector, rvec, tvec] = feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, NUM_MATCHES) 
+
 projected_points_refined, _ = cv2.projectPoints(np.array(vertices_original), rvec, tvec, K, dist_coeff)
 projected_points_unrefined, _ = cv2.projectPoints( np.array(vertices_original), rotation_vector, translation_vector, K, dist_coeff)
 
 projected_points_GT, _ = cv2.projectPoints( np.array(vertices_original), R_change_vec, T_change, K, dist_coeff)
 
+
+####### Visualisation
 print(len(projected_points_unrefined))
 if True:
     RGBimg_original = cv2.imread('./blendSample_1/blendSample/1.png')
