@@ -13,8 +13,8 @@ K =  np.array([[293.33334351 ,           0.  ,        240.    ],
                [  0.         , 293.33334351  ,        135.    ],
                [  0.         ,  0.           ,        1.      ]])
 #SIFT MATCHES
-VIZ= False
-image_index = 4
+VIZ= True
+image_index = 2
 Positions = [np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
              np.array([-7.082789897918701, -1.60836, 5.79825]),
              np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
@@ -100,9 +100,14 @@ def sift_compute(img, viz = False):
     return keypoints_1, descriptors_1
 
 def read_images(i,j): 
-    RGBimg_original = cv2.imread('./blendSample_1/blendSample/%d.png'%(i))
+    # RGBimg_original = cv2.imread('./blendSample_1/blendSample/%d.png'%(i))
+    # RGBimg_original = cv2.cvtColor(RGBimg_original, cv2.COLOR_BGR2RGB)
+    # RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/%d.png'%(j))
+    # RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
+
+    RGBimg_original = cv2.imread('./blendSample_zoom/blendSample/%s.png'%(str(i).zfill(6)))
     RGBimg_original = cv2.cvtColor(RGBimg_original, cv2.COLOR_BGR2RGB)
-    RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/%d.png'%(j))
+    RGBimg_slanted = cv2.imread('./blendSample_zoom/blendSample/%s.png'%(str(j).zfill(6)))
     RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
     return RGBimg_original, RGBimg_slanted
 
@@ -116,7 +121,6 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     matches = bf.match(des1, des2)
 
     matches = sorted(matches, key = lambda x:x.distance)[:numMatches]
-    # print("Number of matches:", len(matches))
     img2_points = []
     obj_points = []
     dist_coeff = np.zeros((1,5))
@@ -144,16 +148,15 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     print("Translation vector (SIFT)")
     print(translation_vector)
 
-    print("AFTER REFINING")
+    
     rvec, tvec = cv2.solvePnPRefineLM(obj_points, img2_points, K, dist_coeff, rotation_vector, translation_vector)
     rotation_matrix, _ = cv2.Rodrigues(rvec)
+    print("AFTER REFINING")
     print("Rotation (SIFT) refined")
     print(rotation_matrix)
     print("Translation (SIFT) refined")
     print(tvec)
-    # projected_points_PnP, _ = cv2.projectPoints(obj_points, rvec, tvec, K, dist_coeff)
 
-    # print(-np.matrix(rotation_matrix).T * np.matrix(translation_vector))
 
     if VIZ:
         
@@ -169,8 +172,7 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
 
 
 img1, img2 = read_images(1,image_index) # reading the images
-
-kp1, des1, vertices_original = wrapper_func() # Make sure that the paths are the same in both files.
+kp1, des1, vertices_original, imagePoints_original = wrapper_func() # Make sure that the paths are the same in both files.
 kp2, des2 = harris_corner_detector(img2)
 # kp2, des2 = sift_compute(img2, True)
 
@@ -184,15 +186,7 @@ projected_points_GT, _ = cv2.projectPoints( np.array(vertices_original), R_chang
 
 ####### Visualisation
 print(len(projected_points_unrefined))
-if True:
-    RGBimg_original = cv2.imread('./blendSample_1/blendSample/1.png')
-    RGBimg_original = cv2.cvtColor(RGBimg_original, cv2.COLOR_BGR2RGB)
-    RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/'+str(image_index)+'.png')
-    RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
-
-    img1 = RGBimg_original
-    img2 = RGBimg_slanted
-
+if True :
 
     for i in projected_points_refined:
         # print(int(i[0][0]),int(i[0][1]))
@@ -206,13 +200,13 @@ if True:
         cv2.drawMarker(img2, (int(i[0][0]),int(i[0][1])),(255,255,0), markerType=cv2.MARKER_STAR, 
         markerSize=3, thickness=1, line_type=cv2.LINE_AA)
 
-    for i in projected_points_GT:
-        # print(int(i[0][0]),int(i[0][1]))
-        # img2 = cv2.circle(img2, (int(i[0][0]),int(i[0][1])), radius=1, color=(255, 255, 0), thickness=2)
-        cv2.drawMarker(img2, (int(i[0][0]),int(i[0][1])),(255, 0, 0), markerType=cv2.MARKER_SQUARE , 
-        markerSize=2, thickness=1, line_type=cv2.LINE_AA)
+    # for i in projected_points_GT:
+    #     # print(int(i[0][0]),int(i[0][1]))
+    #     # img2 = cv2.circle(img2, (int(i[0][0]),int(i[0][1])), radius=1, color=(255, 255, 0), thickness=2)
+    #     cv2.drawMarker(img2, (int(i[0][0]),int(i[0][1])),(255, 0, 0), markerType=cv2.MARKER_SQUARE , 
+    #     markerSize=2, thickness=1, line_type=cv2.LINE_AA)
 
-    cv2.imwrite(str(image_index)+"_with_SIFT_PNP.png", cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
+    # cv2.imwrite(str(image_index)+"_with_SIFT_PNP.png", cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
 
     plt.imshow(img2)
     plt.show()

@@ -158,7 +158,8 @@ def wrapper_func():
         # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample/', '000001_'+str(i)+".png")
         # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./samples/1/', '000000_'+str(i)+".png")
         
-        topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample_1/blendSample/', '000002_'+str(i)+".png")
+        # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample_1/blendSample/', '000002_'+str(i)+".png")
+        topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample_video/blendSample/', '000001_'+str(i)+".png")
 
         boxBoundingBoxes = calculate3DBB(topBoxesBBox, frontBoxesBBox)
         rackBoundingBoxes = calculate3DBB(topRackBBox, frontRackBBox)
@@ -166,12 +167,8 @@ def wrapper_func():
         boxBB.append(boxBoundingBoxes)
         rackBB.append(rackBoundingBoxes)
 
-    # vertices = plotter3DOpen(boxBB, rackBB, 1, False )
-    # print("printing the vertices")
-    # print(vertices)
-    # RGBimg = plt.imread('samples/1/000000.png')
-    vertices = np.load("./3Dpoints1.npy")
-    RGBimg = plt.imread('./blendSample_1/blendSample/1.png')
+    vertices = plotter3DOpen(boxBB, rackBB, 1, False )
+    RGBimg = plt.imread('./blendSample_video/blendSample/000001.png')
     imagePoints = projectToImage(RGBimg, vertices, K)
     imagePoints_list = []
     vertices_list = []
@@ -180,14 +177,14 @@ def wrapper_func():
         for jj in ii:
             imagePoints_list.append([int(jj[0]), int(jj[1])])
 
-    RGBimg = cv2.imread('./blendSample_1/blendSample/1.png')
+    RGBimg = cv2.imread('./blendSample_video/blendSample/000001.png')
     RGBimg = cv2.cvtColor(RGBimg, cv2.COLOR_BGR2RGB)
     kp, des = compute_sift(RGBimg, imagePoints_list)
     for ii in vertices:
         for jj in ii:
             vertices_list.append([jj[0], jj[1], jj[2]])
     
-    return kp, des, vertices_list
+    return kp, des, vertices_list, imagePoints_list
 
 
 # imagePoints = wrapper_func()
