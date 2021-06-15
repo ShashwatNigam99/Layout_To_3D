@@ -1,3 +1,8 @@
+import bpy
+import bpy_extras
+from mathutils import Matrix
+from mathutils import Vector
+
 def get_3x4_RT_matrix_from_blender(cam):
     # bcam stands for blender camera
     R_bcam2cv = Matrix(
@@ -33,6 +38,28 @@ def get_3x4_RT_matrix_from_blender(cam):
          ))
     return RT
 
-cam = bpy.data.objects['camera']
-RT = get_3x4_RT_matrix_from_blender(cam)
-print(RT)
+
+sce = bpy.context.scene
+ob = bpy.context.object
+
+camera_positions_and_angles_file = open("../blendSample/camera_positions_and_angles.txt", "w")
+for f in range(sce.frame_start, sce.frame_end):
+    sce.frame_set(f)
+    print("Frame %i" % f)
+    cam = bpy.data.objects['camera']
+    bpy.context.scene.render.filepath = "../blendSample/"+str(f).zfill(6)+".png"
+    bpy.ops.render.render(write_still = True)
+    RT = get_3x4_RT_matrix_from_blender(cam)
+    camera_positions_and_angles_file.write(str(f))
+    camera_positions_and_angles_file.write("\n")
+    camera_positions_and_angles_file.write(str(cam.location))
+    camera_positions_and_angles_file.write("\n")
+    camera_positions_and_angles_file.write(str(cam.rotation_euler))
+    camera_positions_and_angles_file.write("\n")
+    camera_positions_and_angles_file.write(str(cam.rotation_quaternion))
+    camera_positions_and_angles_file.write("\n")
+    camera_positions_and_angles_file.write(str(RT))
+    camera_positions_and_angles_file.write("\n")
+
+print("Here")
+camera_positions_and_angles_file.close()
