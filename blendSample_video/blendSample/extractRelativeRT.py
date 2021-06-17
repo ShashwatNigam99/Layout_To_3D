@@ -35,4 +35,6 @@ def get_Relative_matrix(list_RT_matrix):
 RT_Matrix = get_RT_matrix_from_file("./camera_positions_and_angles.txt")
 RT_Relative = get_Relative_matrix(RT_Matrix)
 
-print(len(RT_Relative))
+for count,i in enumerate(RT_Relative):
+    print("Frame no %d"%(count))
+    print(i)
