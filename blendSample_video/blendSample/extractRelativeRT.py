@@ -5,9 +5,11 @@ def get_RT_matrix_from_file(file_path):
     file = open(file_path)
     lines = file.read().replace("\n", " ")
     res = re.findall(r'\<Matrix.*?\>', lines)
-    RT_M = []
+    R_M = []
+    T_M = []
     for i in range(len(res)):
-        RT_Matrix = []
+        R_Matrix = []
+        T_Matrix = []
         matrix = res[i]
         rows = re.findall(r'\(.*?\)', matrix)
         for a in rows:
@@ -15,25 +17,37 @@ def get_RT_matrix_from_file(file_path):
             row[0] = row[0][1:]
             row[-1] = row[-1][:-1]
             r = []
+            t = []
+            tm = row[-1]
+            row = row[ : -1]
             for m in row:
                 r.append(float(m))
-            RT_Matrix.append(r)
-        RT_M.append(np.array(RT_Matrix))
-    return RT_M
+            R_Matrix.append(r)
+            T_Matrix.append(float(tm))
+        R_M.append(np.array(R_Matrix))
+        T_M.append(np.array(T_Matrix))
+    return R_M, T_M
 
-def get_Relative_matrix(list_RT_matrix):
+def get_Relative_matrix(list_R_matrix, list_T_matrix):
     i = 1;
-    list_of_relative_matrix = []
-    while(i < len(list_RT_matrix)):
-        R_previous = list_RT_matrix[i-1]
-        R_current = list_RT_matrix[i]
-        relative_RT = R_previous.T.dot(R_current) # fill the formula here
-        list_of_relative_matrix.append(relative_RT)
-        i += 1
-    return list_of_relative_matrix
+    list_of_relative_R_matrix = []
+    list_of_relative_T_matrix = []
+    while(i < len(list_R_matrix)):
+        R_previous = list_R_matrix[i-1]
+        R_current = list_R_matrix[i]
+        relative_R = R_previous.T.dot(R_current) # fill the formula here
+        list_of_relative_R_matrix.append(relative_R)
 
-RT_Matrix = get_RT_matrix_from_file("./camera_positions_and_angles.txt")
-RT_Relative = get_Relative_matrix(RT_Matrix)
+        T_previous = list_T_matrix[i-1]
+        T_current = list_T_matrix[i]
+        # print(T_previous, T_current)
+        relative_T = T_previous - T_current
+        list_of_relative_T_matrix.append(relative_T)
+        i += 1
+    return list_of_relative_R_matrix, list_of_relative_T_matrix
+
+R_Matrix, T_Matrix = get_RT_matrix_from_file("./camera_positions_and_angles.txt")
+R_Relative, T_Relative = get_Relative_matrix(R_Matrix, T_Matrix)
 
 for count,i in enumerate(RT_Relative):
     print("Frame no %d"%(count))
