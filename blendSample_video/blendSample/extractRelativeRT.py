@@ -41,14 +41,21 @@ def get_Relative_matrix(list_R_matrix, list_T_matrix):
         T_previous = list_T_matrix[i-1]
         T_current = list_T_matrix[i]
         # print(T_previous, T_current)
-        relative_T = T_previous - T_current
+        relative_T = -(T_previous - T_current)
         list_of_relative_T_matrix.append(relative_T)
         i += 1
     return list_of_relative_R_matrix, list_of_relative_T_matrix
 
-R_Matrix, T_Matrix = get_RT_matrix_from_file("./camera_positions_and_angles.txt")
+# R_Matrix, T_Matrix = get_RT_matrix_from_file("./camera_positions_and_angles.txt")
+R_Matrix, T_Matrix = get_RT_matrix_from_file("./blendSample_video/blendSample/camera_positions_and_angles.txt")
 R_Relative, T_Relative = get_Relative_matrix(R_Matrix, T_Matrix)
 
-for count,i in enumerate(RT_Relative):
-    print("Frame no %d"%(count))
-    print(i)
+# count = 2
+# for i, j in zip(R_Relative, T_Relative):
+#     print(count)
+#     count+=1
+#     print()
+#     print(i)
+#     print()
+#     print(j)
+#     print()
