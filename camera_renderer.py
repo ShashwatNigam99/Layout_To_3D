@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     sce = bpy.context.scene
     ob = bpy.context.object
-    save_directory = "../blendSample/"
+    save_directory = "./sample_6/"
 
     for f in range(sce.frame_start, sce.frame_end):
         sce.frame_set(f)
