@@ -26,8 +26,8 @@ frame_number_1 = 1
 json_file_name_1 = "frame_%08d_CameraPose.json" % frame_number_1
 json_file_name_1 = os.path.join(save_directory, json_file_name_1)
 
-pose = extract_pose_from_json(json_file_name_1).squeeze()
-transformation = pose_2_transformation(pose)
+pose_1 = extract_pose_from_json(json_file_name_1).squeeze()
+transformation = pose_2_transformation(pose_2)
 
 #################################### Frame number 2
 
@@ -51,12 +51,10 @@ frame_2 = cv2.cvtColor(frame_2, cv2.COLOR_BGR2RGB)
 Rotation = relative_transform[:3, :3]
 Translation = relative_transform[:3, -1]
 
-
 dist_coeff = np.zeros((1, 5))
 corners_list = np.array(corners_list)
 print(corners_list.shape)
 projected_points, _ = cv2.projectPoints(corners_list, Rotation, Translation, K, dist_coeff)
-
 
 current_frame = cv2.imread( save_directory+str(frame_number_1).zfill(6)+".png")
 current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
