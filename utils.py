@@ -62,12 +62,13 @@ def get_image_and_transformation(save_directory, index, list=False):
     if not list:
         json_file_name = "frame_%08d_CameraPose.json" % index
         json_file_name = os.path.join(save_directory, json_file_name)
-
+        image_file_name = str(index).zfill(6)+".png"
+        image_file_name = os.path.join(save_directory, image_file_name)
+       
         pose = extract_pose_from_json(json_file_name).squeeze()
         transformation = pose_2_transformation(pose)
 
-        image = cv2.imread( save_directory+str(index).zfill(6)+".png")
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.cvtColor(cv2.imread(image_file_name), cv2.COLOR_BGR2RGB)
 
         return image, transformation
     else:
@@ -76,10 +77,14 @@ def get_image_and_transformation(save_directory, index, list=False):
         for i in range(1,index+1):
             json_file_name = "frame_%08d_CameraPose.json" % i
             json_file_name = os.path.join(save_directory, json_file_name)
+            image_file_name = str(i).zfill(6)+".png"
+            image_file_name = os.path.join(save_directory, image_file_name)
+
             pose = extract_pose_from_json(json_file_name).squeeze()
             transformation = pose_2_transformation(pose)
             transformations.append(transformation)
-            image = cv2.cvtColor(cv2.imread( save_directory+str(index).zfill(6)+".png"), cv2.COLOR_BGR2RGB)
+            
+            image = cv2.cvtColor(cv2.imread(image_file_name), cv2.COLOR_BGR2RGB)
             images.append(image)
 
         return images, np.array(transformations)

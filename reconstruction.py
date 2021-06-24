@@ -70,6 +70,7 @@ def calculate3DBB(topBBox, frontBBox):
     return Boxes
 
 def reconstruction(dir_path = None):
+    # Reconstructs image 1 (000001.png) in specified directory
     rackBB = []
     boxBB = []
     freeSpace = []
