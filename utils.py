@@ -1,7 +1,8 @@
 import numpy as np
 import open3d as o3d
-import random, json, torch, cv2
+import random, json, torch, cv2, os
 from scipy.spatial.transform import Rotation as rotation_lib
+from config import *
 
 def compute_sift(img,list_):
     sift = cv2.xfeatures2d.SIFT_create()
@@ -44,6 +45,51 @@ def extract_pose_from_json(pose_path):
 
     return pose
 
+def pose_2_transformation(pose):
+    '''
+    Convert poses to transformation matrix, pose is a vector such that
+    pose[:3] is the translation vector
+    pose[3:] are the rotation quarternions
+    '''
+    rot_mat = rotation_lib.from_quat(pose[3:]).as_matrix()
+    translation_vector = np.array([[pose[0]], [pose[1]], [pose[2]]])  # / 1000
+    transformation_mat = np.vstack(( np.hstack((rot_mat,   translation_vector)), 
+                                     np.array([0, 0, 0, 1])   ))
+    return transformation_mat
+
+def get_image_and_transformation(save_directory, index, list=False):
+    
+    if not list:
+        json_file_name = "frame_%08d_CameraPose.json" % index
+        json_file_name = os.path.join(save_directory, json_file_name)
+
+        pose = extract_pose_from_json(json_file_name).squeeze()
+        transformation = pose_2_transformation(pose)
+
+        image = cv2.imread( save_directory+str(index).zfill(6)+".png")
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        return image, transformation
+    else:
+        transformations = []
+        images = []
+        for i in range(1,index+1):
+            json_file_name = "frame_%08d_CameraPose.json" % i
+            json_file_name = os.path.join(save_directory, json_file_name)
+            pose = extract_pose_from_json(json_file_name).squeeze()
+            transformation = pose_2_transformation(pose)
+            transformations.append(transformation)
+            image = cv2.cvtColor(cv2.imread( save_directory+str(index).zfill(6)+".png"), cv2.COLOR_BGR2RGB)
+            images.append(image)
+
+        return images, np.array(transformations)
+
+def get_relative_tranformation_cv(transformation_1, transformation_2):
+    # Transforms from right to left
+    # From cv convert to blender frame
+    # Perform relative transform in blender frame 
+    # Convert from blender to cv frame
+    return np.linalg.inv(CV_2_BLENDER) @ np.linalg.inv(transformation_2) @ transformation_1 @ CV_2_BLENDER
 
 
 def plotter3DOpen(boxBB, rackBB, type=1, show=True):
@@ -106,17 +152,13 @@ def projectToImage(image, vertices, K):
     # plt.show()
     return pts   
 
-def pose_2_transformation(pose):
-    '''
-    Convert poses to transformation matrix, pose is a vector such that
-    pose[:3] is the translation vector
-    pose[3:] are the rotation quarternions
-    '''
-    rot_mat = rotation_lib.from_quat(pose[3:]).as_matrix()
-    translation_vector = np.array([[pose[0]], [pose[1]], [pose[2]]])  # / 1000
-    transformation_mat = np.vstack(( np.hstack((rot_mat,   translation_vector)), 
-                                     np.array([0, 0, 0, 1])   ))
-    return transformation_mat
+
+
+
+
+
+
+
 
 def harris_corner_detector_sift(img):
 
@@ -137,3 +179,4 @@ def harris_corner_detector_sift(img):
     kp, des = compute_sift(img, indices_list)
 
     return kp, des
+

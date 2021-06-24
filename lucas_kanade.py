@@ -1,30 +1,20 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from recon import wrapper_func, K
+from reconstruction import reconstruction
+
+from config import *
 # from blendSample_video.blendSample.extractRelativeRT import R_Relative, T_Relative
 
-dist_coeff = np.zeros((1,5))
 R_Relative = np.array(R_Relative)
 T_Relative = np.array(T_Relative)
-
-# params for ShiTomasi corner detection
-feature_params = dict( maxCorners = 100,
-                       qualityLevel = 0.3,
-                       minDistance = 7,
-                       blockSize = 7 )
-
-# Parameters for lucas kanade optical flow
-lk_params = dict( winSize  = (15,15),
-                  maxLevel = 2,
-                  criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
 # Create some random colors
 color = np.random.randint(0,255,(200,3))
 
 # Take first frame and find corners in it
 old_frame = cv2.imread('./blendSample_video/blendSample/%s.png'%(str(1).zfill(6)))
-kp1, des1, vertices_original, imagePoints_original = wrapper_func() # Make sure that the paths are the same in both files.
+kp1, des1, vertices_original, imagePoints_original = reconstruction() # Make sure that the paths are the same in both files.
 vertices_original = np.array(vertices_original)
 imagePoints_original = np.array(imagePoints_original,dtype=np.float32)
 
