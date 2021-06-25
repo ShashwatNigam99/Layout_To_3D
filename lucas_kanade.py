@@ -6,7 +6,7 @@ from reconstruction import reconstruction
 from utils import get_image_and_transformation, get_relative_tranformation_cv
 from config import *
 
-FRAMES = 79
+FRAMES = 60
 
 images, transformations = get_image_and_transformation(DATA_PATH, FRAMES, list= True)
 
@@ -21,6 +21,8 @@ vertices_original = np.array(vertices_original)
 imagePoints_original = np.array(imagePoints_original,dtype=np.float32)
 imagePoints_original = np.reshape(imagePoints_original,(imagePoints_original.shape[0],1, imagePoints_original.shape[1]))
 vertices_original = np.reshape(vertices_original,(vertices_original.shape[0],1, vertices_original.shape[1]))
+
+vertices_original_GT = vertices_original
 
 old_gray = cv2.cvtColor(images[0], cv2.COLOR_BGR2GRAY)
 
@@ -81,10 +83,11 @@ for i in range(2,FRAMES+1):
     R_loss_refined.append(np.mean(abs(rvec_matrix - Rotation))) 
 
     good_new_vertices = good_new_vertices @ rvec_matrix + tvec.T
+    vertices_original_GT = vertices_original_GT @ Rotation + Translation
 
     projected_points_pred, _ = cv2.projectPoints(good_new_vertices, rvec_matrix, tvec, K, dist_coeff)
     
-    projected_points_GT, _ = cv2.projectPoints(good_new_vertices, Rotation, Translation, K, dist_coeff)
+    projected_points_GT, _ = cv2.projectPoints(vertices_original_GT, Rotation, Translation, K, dist_coeff)
     
     # for i in projected_points_pred:
     #         cv2.drawMarker(frame, (int(i[0][0]),int(i[0][1])),(0,0,255), markerType=cv2.MARKER_STAR, 
@@ -106,7 +109,7 @@ for i in range(2,FRAMES+1):
     img = cv2.add(frame,mask)
 
     cv2.imshow('frame',img)
-    k = cv2.waitKey(240) & 0xff
+    k = cv2.waitKey(60) & 0xff
     if k == 27:
         break
 
