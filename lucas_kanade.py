@@ -40,6 +40,7 @@ for i in range(2,FRAMES+1):
 
     print("\n FRAME NUMBER %d \n"%(i))
     # frame = cv2.imread('./blendSample_video/blendSample/%s.png'%(str(i).zfill(6)))
+    frame = images[i-1]
     frame_gray = cv2.cvtColor(images[i-1], cv2.COLOR_BGR2GRAY)
 
     # calculate optical flow
@@ -81,23 +82,39 @@ for i in range(2,FRAMES+1):
 
     good_new_vertices = good_new_vertices @ rvec_matrix + tvec.T
 
-    # draw the tracks
-    # for i,(new,old) in enumerate(zip(good_new,good_old)):
-    #     a,b = new.ravel()
-    #     c,d = old.ravel()
-    #     mask = cv2.line(mask, (a,b),(c,d), color[i].tolist(), 2)
-    #     frame = cv2.circle(frame,(a,b),5,color[i].tolist(),-1)
-    # img = cv2.add(frame,mask)
+    projected_points_pred, _ = cv2.projectPoints(good_new_vertices, rvec_matrix, tvec, K, dist_coeff)
+    
+    projected_points_GT, _ = cv2.projectPoints(good_new_vertices, Rotation, Translation, K, dist_coeff)
+    
+    # for i in projected_points_pred:
+    #         cv2.drawMarker(frame, (int(i[0][0]),int(i[0][1])),(0,0,255), markerType=cv2.MARKER_STAR, 
+    #         markerSize=4, thickness=2, line_type=cv2.LINE_AA)
 
-    # cv2.imshow('frame',img)
-    # k = cv2.waitKey(240) & 0xff
-    # if k == 27:
-    #     break
+    # for i in projected_points_GT:
+    #         cv2.drawMarker(frame, (int(i[0][0]),int(i[0][1])),(255,255,255), markerType=cv2.MARKER_STAR, 
+    #         markerSize=4, thickness=2, line_type=cv2.LINE_AA)
+
+    # plt.imshow(frame)
+    # plt.show()
+
+    # draw the tracks
+    for i,(new,old) in enumerate(zip(good_new,good_old)):
+        a,b = new.ravel()
+        c,d = old.ravel()
+        mask = cv2.line(mask, (a,b),(c,d), color[i].tolist(), 2)
+        frame = cv2.circle(frame,(a,b),5,color[i].tolist(),-1)
+    img = cv2.add(frame,mask)
+
+    cv2.imshow('frame',img)
+    k = cv2.waitKey(240) & 0xff
+    if k == 27:
+        break
 
     # Now update the previous frame and previous points
     old_gray = frame_gray.copy()
     p0 = good_new.reshape(-1,1,2)
     vertices_original = good_new_vertices.reshape(-1,1,3)
+
 cv2.destroyAllWindows()
 
 fig, (ax1, ax2) = plt.subplots(1, 2,figsize=(25,15))
