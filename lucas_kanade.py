@@ -15,7 +15,7 @@ images, transformations = get_image_and_transformation(DATA_PATH, FRAMES, list= 
 color = np.random.randint(0,255,(200,3))
 
 # Take first frame and reconstruct it
-kp1, des1, vertices_original, imagePoints_original = reconstruction(DATA_PATH) # Make sure that the paths are the same in both files.
+kp1, des1, vertices_original, imagePoints_original = reconstruction(DATA_PATH)
 
 vertices_original = np.array(vertices_original)
 imagePoints_original = np.array(imagePoints_original,dtype=np.float32)
@@ -41,7 +41,6 @@ for i in range(2,FRAMES+1):
     x_axis.append(i)
 
     print("\n FRAME NUMBER %d \n"%(i))
-    # frame = cv2.imread('./blendSample_video/blendSample/%s.png'%(str(i).zfill(6)))
     frame = images[i-1]
     frame_gray = cv2.cvtColor(images[i-1], cv2.COLOR_BGR2GRAY)
 
@@ -53,7 +52,7 @@ for i in range(2,FRAMES+1):
     good_old = p0[st==1]
     good_new_vertices = vertices_original[st==1]
 
-    #predictions
+    # Predictions
     (_, rotation_vector, translation_vector,inliers) = cv2.solvePnPRansac(good_new_vertices, good_new,\
                             K, dist_coeff, reprojectionError = 1.0, flags = cv2.SOLVEPNP_EPNP)
     rotation_matrix, _ = cv2.Rodrigues(rotation_vector)
@@ -65,7 +64,7 @@ for i in range(2,FRAMES+1):
     print(Rotation)
     print(Translation)
 
-    print("before refining")
+    print("Before refining")
     print(translation_vector.T)
     print(rotation_matrix)
     T_loss_unrefined.append(np.mean(abs(translation_vector.T-Translation)))
@@ -76,7 +75,7 @@ for i in range(2,FRAMES+1):
          (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 1000, 0.1))
     rvec_matrix, _ = cv2.Rodrigues(rvec)
 
-    print("after refining")
+    print("After refining")
     print(tvec.T)
     print(rvec_matrix)
     T_loss_refined.append(np.mean(abs(tvec.T - Translation)))

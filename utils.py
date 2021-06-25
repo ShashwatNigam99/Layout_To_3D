@@ -25,7 +25,6 @@ def read_json_file(path):
 
     return json_data
 
-
 def json_to_numpy(pose):
     pose = np.array([pose['position']['x'],
                      pose['position']['y'],
@@ -36,7 +35,6 @@ def json_to_numpy(pose):
                      pose['rotation']['w']
                      ])
     return pose
-
 
 def extract_pose_from_json(pose_path):
     
@@ -95,7 +93,6 @@ def get_relative_tranformation_cv(transformation_1, transformation_2):
     # Perform relative transform in blender frame 
     # Convert from blender to cv frame
     return np.linalg.inv(CV_2_BLENDER) @ np.linalg.inv(transformation_2) @ transformation_1 @ CV_2_BLENDER
-
 
 def plotter3DOpen(boxBB, rackBB, type=1, show=True):
     geometries = []
@@ -157,14 +154,6 @@ def projectToImage(image, vertices, K):
     # plt.show()
     return pts   
 
-
-
-
-
-
-
-
-
 def harris_corner_detector_sift(img):
 
     operatedImage = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -184,4 +173,3 @@ def harris_corner_detector_sift(img):
     kp, des = compute_sift(img, indices_list)
 
     return kp, des
-
