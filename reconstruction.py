@@ -115,3 +115,27 @@ def reconstruction(dir_path = None):
     
     return kp, des, vertices_list, imagePoints_list
 
+def reconGT(points_path, dir_path):
+    vertices = np.load(points_path)
+
+    RGBimg = plt.imread(dir_path + '/000001.png')
+
+    imagePoints = projectToImage(RGBimg, vertices, K)
+
+    imagePoints_list = []
+    vertices_list = []
+
+    for ii in imagePoints:
+        for jj in ii:
+            imagePoints_list.append([int(jj[0]), int(jj[1])])
+
+    RGBimg = cv2.cvtColor(cv2.imread(dir_path + '/000001.png'), cv2.COLOR_BGR2RGB)
+
+    kp, des = compute_sift(RGBimg, imagePoints_list)
+    for ii in vertices:
+        for jj in ii:
+            vertices_list.append([jj[0], jj[1], jj[2]])
+    
+    return kp, des, vertices_list, imagePoints_list
+
+

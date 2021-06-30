@@ -37,6 +37,7 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     (_, rotation_vector, translation_vector,inliers) = cv2.solvePnPRansac(obj_points, img2_points,\
                                                          K, dist_coeff, reprojectionError = 1.0, flags = cv2.USAC_MAGSAC)
     rotation_matrix, _ = cv2.Rodrigues(rotation_vector)
+    print("BEFORE REFINING")
     print("Rotation (SIFT)")
     print(rotation_matrix)
     print("Translation vector (SIFT)")
@@ -53,7 +54,6 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
 
     if VIZ:
         img = cv2.drawMatches(img1, kp1, img2, kp2, matches, img2, flags=2)
-        
         fig = plt.figure(figsize=(16,16))
         plt.axis('off')
         plt.imshow(img)
