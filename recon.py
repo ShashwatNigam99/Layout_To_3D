@@ -98,37 +98,15 @@ def plotter3DOpen(boxBB, rackBB, type=1, show=True):
             for box in shelfBoxes:
                 mesh_box = o3d.geometry.TriangleMesh.create_box(width=box[3], height=box[5], depth=box[4])
                 mesh_box.paint_uniform_color([random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]) 
-                mesh_box.translate([box[0], box[1], box[2]] )  # X Y Z    
-                vertices.append(np.asarray(mesh_box.vertices))                             
+                mesh_box.translate([box[0], box[1], box[2]] )  # X Y Z                         
                 geometries.append(mesh_box)
-                pcd = o3d.geometry.PointCloud() 
-                pcd.points = mesh_box.vertices                             
-                geometries.append(pcd)
-    elif type == 2:
-        for shelfBoxes in boxBB:
-            for box in shelfBoxes:
-                mesh_box = o3d.geometry.TriangleMesh.create_box(width=box[3], height=box[5], depth=box[4])
-                mesh_box.paint_uniform_color([random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]) 
-                mesh_box.translate([box[0], box[1], box[2]])  # X Y Z 
-                pcd = mesh_box.sample_points_uniformly(number_of_points = 500)   
-                vertices.append(np.asarray(pcd.points))                             
-                geometries.append(pcd)
-    elif type == 3:
-        for shelfBoxes in boxBB:
-            for box in shelfBoxes:
-                mesh_box = o3d.geometry.TriangleMesh.create_box(width=box[3], height=box[5], depth=box[4])
-                mesh_box.paint_uniform_color([random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]) 
-                mesh_box.translate([box[0], box[1], box[2]])  # X Y Z    
-                pcd = o3d.geometry.PointCloud() 
-                pcd.points = mesh_box.vertices                             
-                geometries.append(pcd)
-                vertices.append(np.asarray(pcd.points))
-    if show:
-        mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1, origin=[0,0,0])
-        geometries.append(mesh_frame)
+
+
+    if False:
+
         o3d.visualization.draw_geometries(geometries)
 
-    return vertices
+    return vertices, geometries
 
 def projectToImage(image, vertices, K):
     pts = []
@@ -155,10 +133,7 @@ def wrapper_func():
     freeSpaceAboveBox = []
 
     for i in range(SHELVES):
-        # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample/', '000001_'+str(i)+".png")
-        # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./samples/1/', '000000_'+str(i)+".png")
         
-        # topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample_1/blendSample/', '000002_'+str(i)+".png")
         topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample_video/blendSample/', '000001_'+str(i)+".png")
 
         boxBoundingBoxes = calculate3DBB(topBoxesBBox, frontBoxesBBox)
@@ -167,26 +142,8 @@ def wrapper_func():
         boxBB.append(boxBoundingBoxes)
         rackBB.append(rackBoundingBoxes)
 
-    vertices = plotter3DOpen(boxBB, rackBB, 1, False )
-    RGBimg = plt.imread('./blendSample_video/blendSample/000001.png')
-    imagePoints = projectToImage(RGBimg, vertices, K)
-    imagePoints_list = []
-    vertices_list = []
+    vertices, geometries = plotter3DOpen(boxBB, rackBB, 1, False )
 
-    for ii in imagePoints:
-        for jj in ii:
-            imagePoints_list.append([int(jj[0]), int(jj[1])])
-
-    RGBimg = cv2.imread('./blendSample_video/blendSample/000001.png')
-    RGBimg = cv2.cvtColor(RGBimg, cv2.COLOR_BGR2RGB)
-    kp, des = compute_sift(RGBimg, imagePoints_list)
-    for ii in vertices:
-        for jj in ii:
-            vertices_list.append([jj[0], jj[1], jj[2]])
     
-    return kp, des, vertices_list, imagePoints_list
+    return vertices, geometries
 
-
-# imagePoints = wrapper_func()
-
-getBBForLabel
