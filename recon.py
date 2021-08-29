@@ -15,11 +15,11 @@ import open3d as o3d
 from utils import compute_sift
 
 LAYOUT_DIM = 512
-SHELVES = 4
+SHELVES = 3
 # SCALE= 0.015625
 SCALE = 0.0390625
-K =  np.array([[293.33334351 ,           0.  ,        240.    ],
-               [  0.         , 293.33334351  ,        135.    ],
+K =  np.array([[600 ,           0.  ,        748/2.    ],
+               [  0.         , 600  ,        1000/2.    ],
                [  0.         ,  0.           ,        1.      ]])
 
 
@@ -38,8 +38,9 @@ def getBoundingBoxes(img):
         boundingBoxes.append([x,y,w,h])
     return boundingBoxes
 
-def rackAndBoxBBs(img):
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+def rackAndBoxBBs(gray):
+    
+    gray = gray.astype(np.uint8)
     boxThresh = cv2.threshold(gray,128,255,cv2.THRESH_BINARY)[1]
     boxBB = getBoundingBoxes(boxThresh)
 
@@ -48,16 +49,14 @@ def rackAndBoxBBs(img):
     
     return rackBB, boxBB
 
-def getBBForLabel(basePath, layoutPath):
+def getBBForLabel(front_slice, top_slice):
 
     # find the bounding box for boxes in top view
-    img = cv2.imread(basePath + 'top' + layoutPath)
-    topRackBBox, topBoxesBBox = rackAndBoxBBs(img)
+    topRackBBox, topBoxesBBox = rackAndBoxBBs(top_slice)
     topBoxesBBox.sort()
 
     # find the bounding box for boxes in front view
-    img = cv2.imread(basePath + 'front' + layoutPath)
-    frontRackBBox, frontBoxesBBox = rackAndBoxBBs(img)
+    frontRackBBox, frontBoxesBBox = rackAndBoxBBs(front_slice)
     frontBoxesBBox.sort()
 
     return topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox
@@ -98,11 +97,18 @@ def plotter3DOpen(boxBB, rackBB, type=1, show=True):
             for box in shelfBoxes:
                 mesh_box = o3d.geometry.TriangleMesh.create_box(width=box[3], height=box[5], depth=box[4])
                 mesh_box.paint_uniform_color([random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]) 
-                mesh_box.translate([box[0], box[1], box[2]] )  # X Y Z                         
+                mesh_box.translate([box[0], box[1], box[2]] )  # X Y Z   
+                vertices.append(np.asarray(mesh_box.vertices))                      
                 geometries.append(mesh_box)
+                # pcd = o3d.geometry.PointCloud() 
+                # pcd.points = mesh_box.vertices                             
+                # geometries.append(pcd)
 
 
     if False:
+
+        mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1, origin=[0,0,0])
+        geometries.append(mesh_frame)
 
         o3d.visualization.draw_geometries(geometries)
 
@@ -110,7 +116,7 @@ def plotter3DOpen(boxBB, rackBB, type=1, show=True):
 
 def projectToImage(image, vertices, K):
     pts = []
-    # implot = plt.imshow(image)
+    implot = plt.imshow(image)
 
     for boxPoints in vertices:
         imagePts = K @ boxPoints.T
@@ -119,22 +125,25 @@ def projectToImage(image, vertices, K):
         imagePts = imagePts[:2,:].T
 
         pts.append(imagePts)
-    # print(pts)
-    #     plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
+    # # print(pts)
+        plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
 
-    # plt.show()
+    plt.show()
     return pts   
 
 
-def wrapper_func():
+def wrapper_func(index):
     rackBB = []
     boxBB = []
     freeSpace = []
     freeSpaceAboveBox = []
 
+    frontlayout = np.load("./sdf_final/topLayouts/front00000%d.npy"%(index))
+    toplayout = np.load("./sdf_final/topLayouts/top00000%d.npy"%(index))
+
     for i in range(SHELVES):
         
-        topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel('./blendSample_video/blendSample/', '000001_'+str(i)+".png")
+        topRackBBox, topBoxesBBox, frontRackBBox, frontBoxesBBox = getBBForLabel(frontlayout[i,:,:], toplayout[i,:,:])
 
         boxBoundingBoxes = calculate3DBB(topBoxesBBox, frontBoxesBBox)
         rackBoundingBoxes = calculate3DBB(topRackBBox, frontRackBBox)
@@ -143,7 +152,27 @@ def wrapper_func():
         rackBB.append(rackBoundingBoxes)
 
     vertices, geometries = plotter3DOpen(boxBB, rackBB, 1, False )
+    RGBimg = plt.imread('./sdf_final/Images/00000%d.jpg'%(index))
+    imagePoints = projectToImage(RGBimg, vertices, K)
 
+    imagePoints_list = []
+    vertices_list = []
+
+    for ii in imagePoints:
+        for jj in ii:
+            imagePoints_list.append([int(jj[0]), int(jj[1])])
+
+    print("before pick")
+    print(len(imagePoints_list))
+    RGBimg = cv2.imread('./sdf_final/Images/00000%d.jpg'%(index))
+    RGBimg = cv2.cvtColor(RGBimg, cv2.COLOR_BGR2RGB)
+    kp, des = compute_sift(RGBimg, imagePoints_list)
+    print("check")
+    print(len(kp))
+    for ii in vertices:
+        for jj in ii:
+            vertices_list.append([jj[0], jj[1], jj[2]])
     
-    return vertices, geometries
+    return kp, des, vertices_list, imagePoints_list, geometries
 
+# wrapper_func()

@@ -9,61 +9,16 @@ from utils import compute_sift
 from scipy import io
 
 NUM_MATCHES = 30
-K =  np.array([[293.33334351 ,           0.  ,        240.    ],
-               [  0.         , 293.33334351  ,        135.    ],
+SCALE = 0.0390625
+K =  np.array([[600 ,           0.  ,        748/2.    ],
+               [  0.         , 600  ,        1000/2.    ],
                [  0.         ,  0.           ,        1.      ]])
 #SIFT MATCHES
 VIZ= True
 image_index = 2
-Positions = [np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
-             np.array([-7.082789897918701, -1.60836, 5.79825]),
-             np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
-             np.array([-7.082789897918701, -2.38836, 5.098252296447754]),
-             np.array([-5.02279, -5.95836, 5.098252296447754])]
 
-Rotations = [np.array([[-0.0000,  1.0000, -0.0000],
-                       [-0.0000,  0.0000, -1.0000],
-                       [-1.0000, -0.0000,  0.0000]]),
-             np.array([[-0.0000,  1.0000, -0.0000],
-                       [-0.0000,  0.0000, -1.0000],
-                       [-1.0000, -0.0000,  0.0000]]),
-             np.array([[0.1392, 0.9903, -0.0000],
-                       [-0.0000, 0.0000, -1.0000],
-                       [-0.9903, 0.1392,  0.0000]]),
-             np.array([[-0.0663,  0.9978,  0.0000],
-                       [-0.0000,  0.0000, -1.0000],
-                       [-0.9978, -0.0663,  0.0000]]),
-             np.array([[0.2470,  0.9690, -0.0000],
-                       [-0.0000, -0.0000, -1.0000],
-                       [-0.9690,  0.2470,  0.0000]])]
 
-P1_T = np.array([-7.082789897918701, -6.078360557556152, 5.098252296447754] )
-P1_R = np.array([90.0, 0.0, 90.0])
-P1_R_matrix = np.array([[-0.0000,  1.0000, -0.0000],
-                       [-0.0000,  0.0000, -1.0000],
-                       [-1.0000, -0.0000,  0.0000]])
-
-P2_T = Positions[image_index-2]
-P2_R_matrix = Rotations[image_index-2]
-
-T_change = (P1_T - P2_T)
-# blender to open3D
-T_change = np.array([[T_change[1]],
-                     [-T_change[2]],
-                     [-T_change[0]]])
 dist_coeff = np.zeros((1,5))
-R_change_matrix = P1_R_matrix.T.dot(P2_R_matrix)
-R_change_vec, _ = cv2.Rodrigues(R_change_matrix)
-R_change_vec = np.array([[R_change_vec[1]],
-                     [-R_change_vec[2]],
-                        [-R_change_vec[0]]])
-
-print("Ground truth rotation")
-R_change_vec = R_change_vec.reshape((3,1))
-rotation_matrix, _ = cv2.Rodrigues(R_change_vec)
-print(rotation_matrix)
-print("Ground truth translation")
-print(T_change.squeeze())
 
 
 def harris_corner_detector(img):
@@ -105,9 +60,9 @@ def read_images(i,j):
     # RGBimg_slanted = cv2.imread('./blendSample_1/blendSample/%d.png'%(j))
     # RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
 
-    RGBimg_original = cv2.imread('./blendSample_zoom/blendSample/%s.png'%(str(i).zfill(6)))
+    RGBimg_original = cv2.imread('./sdf_final/Images/00000%d.jpg'%(i))
     RGBimg_original = cv2.cvtColor(RGBimg_original, cv2.COLOR_BGR2RGB)
-    RGBimg_slanted = cv2.imread('./blendSample_zoom/blendSample/%s.png'%(str(j).zfill(6)))
+    RGBimg_slanted = cv2.imread('./sdf_final/Images/00000%d.jpg'%(j))
     RGBimg_slanted = cv2.cvtColor(RGBimg_slanted, cv2.COLOR_BGR2RGB)
     return RGBimg_original, RGBimg_slanted
 
@@ -117,9 +72,10 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
     
     #feature matching
     bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
-
+    print(len(kp1))
+    print(len(kp2))
     matches = bf.match(des1, des2)
-
+    print(len(matches))
     matches = sorted(matches, key = lambda x:x.distance)[:numMatches]
     img2_points = []
     obj_points = []
@@ -171,9 +127,14 @@ def feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, nu
 
 
 
-img1, img2 = read_images(1,image_index) # reading the images
-kp1, des1, vertices_original, imagePoints_original = wrapper_func() # Make sure that the paths are the same in both files.
-kp2, des2 = harris_corner_detector(img2)
+img1, img2 = read_images(0,1) # reading the images
+kp1, des1, vertices_original, imagePoints_original,_ = wrapper_func(0) # Make sure that the paths are the same in both files.
+kp2, des2, _, _, _ = wrapper_func(1) # Make sure that the paths are the same in both files.
+
+# plt.imshow(img1)
+# plt.show()
+# plt.imshow(img2)
+# plt.show()
 # kp2, des2 = sift_compute(img2, True)
 
 [rotation_vector, translation_vector, rvec, tvec] = feature_matching_PNP(img1, img2, kp1, des1, kp2, des2, vertices_original, NUM_MATCHES) 
@@ -181,7 +142,6 @@ kp2, des2 = harris_corner_detector(img2)
 projected_points_refined, _ = cv2.projectPoints(np.array(vertices_original), rvec, tvec, K, dist_coeff)
 projected_points_unrefined, _ = cv2.projectPoints( np.array(vertices_original), rotation_vector, translation_vector, K, dist_coeff)
 
-projected_points_GT, _ = cv2.projectPoints( np.array(vertices_original), R_change_vec, T_change, K, dist_coeff)
 
 
 ####### Visualisation
@@ -192,13 +152,13 @@ if True :
         # print(int(i[0][0]),int(i[0][1]))
         # img2 = cv2.circle(img2, (int(i[0][0]),int(i[0][1])), radius=1, color=(0, 0, 255), thickness=2)
         cv2.drawMarker(img2, (int(i[0][0]),int(i[0][1])),(0,0,255), markerType=cv2.MARKER_STAR, 
-        markerSize=4, thickness=1, line_type=cv2.LINE_AA)
+        markerSize=8, thickness=10, line_type=cv2.LINE_AA)
 
     for i in projected_points_unrefined:
         # print(int(i[0][0]),int(i[0][1]))
         # img2 = cv2.circle(img2, (int(i[0][0]),int(i[0][1])), radius=1, color=(0, 0, 255), thickness=2)
         cv2.drawMarker(img2, (int(i[0][0]),int(i[0][1])),(255,255,0), markerType=cv2.MARKER_STAR, 
-        markerSize=3, thickness=1, line_type=cv2.LINE_AA)
+        markerSize=7, thickness=3, line_type=cv2.LINE_AA)
 
     # for i in projected_points_GT:
     #     # print(int(i[0][0]),int(i[0][1]))
