@@ -100,9 +100,18 @@ def plotter3DOpen(boxBB, rackBB, type=1, show=True):
                 mesh_box.translate([box[0], box[1], box[2]] )  # X Y Z   
                 vertices.append(np.asarray(mesh_box.vertices))                      
                 geometries.append(mesh_box)
+
                 # pcd = o3d.geometry.PointCloud() 
                 # pcd.points = mesh_box.vertices                             
                 # geometries.append(pcd)
+
+        for shelfBoxes in rackBB: # for racks
+            for box in shelfBoxes:
+                mesh_box = o3d.geometry.TriangleMesh.create_box(width=box[3], height=box[5]/32, depth=box[4])
+                mesh_box.paint_uniform_color([random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]) 
+                mesh_box.translate([box[0], box[1]+box[5], box[2]] )  # X Y Z   
+                vertices.append(np.asarray(mesh_box.vertices))                      
+                geometries.append(mesh_box)
 
 
     if False:
@@ -116,7 +125,7 @@ def plotter3DOpen(boxBB, rackBB, type=1, show=True):
 
 def projectToImage(image, vertices, K):
     pts = []
-    implot = plt.imshow(image)
+    # implot = plt.imshow(image)
 
     for boxPoints in vertices:
         imagePts = K @ boxPoints.T
@@ -126,9 +135,9 @@ def projectToImage(image, vertices, K):
 
         pts.append(imagePts)
     # # print(pts)
-        plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
+        # plt.scatter(imagePts[:,0], imagePts[:,1], c='r', s=10)
 
-    plt.show()
+    # plt.show()
     return pts   
 
 
@@ -175,4 +184,4 @@ def wrapper_func(index):
     
     return kp, des, vertices_list, imagePoints_list, geometries
 
-# wrapper_func()
+wrapper_func(0)
